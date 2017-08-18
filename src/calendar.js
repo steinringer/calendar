@@ -12,9 +12,11 @@
         function() {
 
             function populateHourSections(element) {
+
                 for(var i = 0; i < 24; i++) {
                     var hourDiv = document.createElement('div');
                     hourDiv.setAttribute('data-hour', i);
+                    hourDiv.classList.add('day-view__hour');
                     element[0].appendChild(hourDiv);
                 }
             }
@@ -22,6 +24,7 @@
             return {
                 //templateUrl: '/src/templates/dayView.html',
                 link: function(scope, element, attrs) {
+                    element[0].classList.add('day-view');
                     populateHourSections(element);
                 }
             }
@@ -37,6 +40,8 @@
                     options: '='
                 },
                 link: function(scope, element, attrs) {
+                    element[0].classList.add('day-view');
+
                     scope.$watch('options.mode',
                     function(newVal) {
                         var template;
