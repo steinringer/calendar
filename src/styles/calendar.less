@@ -2,8 +2,16 @@
 @middleColor: #999999;
 @rowHeight: 40px;
 
+.day-view,
+.day-view__hour,
+.interval
+{
+    box-sizing: border-box;
+}
+
 .day-view {
     display: block;
+    position: relative;
     padding: 0;
     min-height: 100%;
 }
@@ -21,4 +29,17 @@
     line-height: @rowHeight;
     user-select: none;
     cursor: default;
+}
+
+.interval {
+    @color: limegreen;
+    @darkerColor: darken(@color, 15%);
+    @leftMargin: 60px;
+    position: absolute;
+    left: @leftMargin;
+    color: @darkerColor;
+    border: 1px solid @darkerColor;
+    width: calc(~"100% - @{leftMargin}");
+    background-color: rgba(red(@color), green(@color), blue(@color), 0.8);
+    padding: 5px;
 }

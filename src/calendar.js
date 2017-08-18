@@ -36,6 +36,37 @@
         }
     ]);
 
+    angular.module('calendar').directive('interval', [
+        function() {
+            var totalMillis = 86400000;
+
+            function calculatePosition(date) {
+                var start = date;
+                var startDay = new Date(
+                    date.getFullYear(),
+                    date.getMonth(),
+                    date.getDate());
+                
+                return ((start.getTime() - startDay.getTime()) / totalMillis) * 100.0;
+            }
+
+            return {
+                templateUrl: '/src/templates/interval.html',
+                scope: true,
+                link: function(scope, element, attrs) {
+                    element[0].classList.add('interval');
+                    
+                    var startPercentage = calculatePosition(scope.interval.from);
+                    element[0].style.top = startPercentage + '%';
+                    
+                    var endPercentage = calculatePosition(scope.interval.to) - startPercentage;
+                    element[0].style.height = endPercentage + '%';
+
+                }
+            }
+        }
+    ]);
+
     angular.module('calendar').directive('dayView', [
         '$compile',
         function($compile) {
@@ -52,7 +83,7 @@
             }
 
             return {
-                //templateUrl: '/src/templates/dayView.html',
+                templateUrl: '/src/templates/dayView.html',
                 link: function(scope, element, attrs) {
                     element[0].classList.add('day-view');
                     populateHourSections(element, scope);
@@ -80,8 +111,9 @@
                                 template = '<day-view />';
                                 break;
                         }
-
-                        var view = $compile(template)(scope);
+                        var dayScope = scope.$new();
+                        dayScope.intervals = scope.options.data;
+                        var view = $compile(template)(dayScope);
                         element.append(view);
                     })
                 }
