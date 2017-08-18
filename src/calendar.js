@@ -23,16 +23,31 @@
         WEEK: 2
     }));
 
-    angular.module('calendar').directive('dayView', [
+    angular.module('calendar').directive('hourRow', [
         function() {
 
-            function populateHourSections(element) {
+            return {
+                template: '<span>{{hour | padLeft : 2 : \'0\'}}</span>',
+                scope: true,
+                link: function(scope, element, attrs) {
+                    scope.hour = attrs.hour;
+                }
+            }
+        }
+    ]);
+
+    angular.module('calendar').directive('dayView', [
+        '$compile',
+        function($compile) {
+
+            function populateHourSections(element, scope) {
 
                 for(var i = 0; i < 24; i++) {
-                    var hourDiv = document.createElement('div');
+                    var hourDiv = document.createElement('hour-row');
                     hourDiv.setAttribute('data-hour', i);
                     hourDiv.classList.add('day-view__hour');
-                    element[0].appendChild(hourDiv);
+                    var compiledElement = $compile(hourDiv)(scope);
+                    element.append(compiledElement);
                 }
             }
 
@@ -40,7 +55,7 @@
                 //templateUrl: '/src/templates/dayView.html',
                 link: function(scope, element, attrs) {
                     element[0].classList.add('day-view');
-                    populateHourSections(element);
+                    populateHourSections(element, scope);
                 }
             }
         }
