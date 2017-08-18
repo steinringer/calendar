@@ -27,7 +27,7 @@
         function() {
 
             return {
-                template: '<span>{{hour | padLeft : 2 : \'0\'}}</span>',
+                template: '<span class="hour-row__label">{{hour | padLeft : 2 : \'0\'}}:00</span>',
                 scope: true,
                 link: function(scope, element, attrs) {
                     scope.hour = attrs.hour;

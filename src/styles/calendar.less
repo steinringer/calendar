@@ -1,4 +1,6 @@
 @darkColor: #000000;
+@middleColor: #999999;
+@rowHeight: 40px;
 
 .day-view {
     display: block;
@@ -8,6 +10,15 @@
 
 .day-view__hour {
     display: block;
-    height: 40px;
-    border-bottom: 1px solid @darkColor;
+    height: @rowHeight;
+    border-bottom: 1px solid @middleColor;
+}
+
+.hour-row__label {
+    color: @middleColor;
+    padding-left: 10px;
+    padding-right: 10px;
+    line-height: @rowHeight;
+    user-select: none;
+    cursor: default;
 }
