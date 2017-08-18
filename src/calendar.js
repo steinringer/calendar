@@ -8,6 +8,18 @@
         WEEK: 2
     }));
 
+    angular.module('calendar').directive('dayView', [
+        function() {
+
+            return {
+                templateUrl: '/src/templates.dayView.html',
+                link: function(scope, element, attrs) {
+
+                }
+            }
+        }
+    ]);
+
     angular.module('calendar').directive('calendar', [
         'calendarConstants',
         function(calendarConstants) {
