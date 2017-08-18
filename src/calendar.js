@@ -3,16 +3,34 @@
 
     angular.module('calendar', []);
         
+    angular.module('calendar').filter('duration', [
+        '$filter',
+        function($filter) {
+            var padLeftFilter = $filter('padLeft');
+            return function(interval) {
+                if (interval && angular.isDate(interval.from) && angular.isDate(interval.to)) {
+                    var millisDiff = interval.to.getTime() - interval.from.getTime();
+                    var hours = Math.floor(millisDiff / 3600000);
+                    var hoursInMillis = hours * 3600000;
+                    var minutes = Math.floor((millisDiff - hoursInMillis) / 60000);
+
+                    return padLeftFilter(hours, 2, '0') + ':' + padLeftFilter(minutes, 2, '0');
+                }
+                
+                return interval;
+            }
+        }
+    ]);
+        
     angular.module('calendar').filter('padLeft', [
         function() {
             return function(val, noOfChars, char) {
-                if (val) {
+                if (val != null) {
                     val = val.toString();
                     while(val.length < noOfChars) {
                         val = char + val;
                     }
-                }
-                
+                }                
                 return val;
             }
         }
@@ -55,13 +73,12 @@
                 scope: true,
                 link: function(scope, element, attrs) {
                     element[0].classList.add('interval');
-                    
+
                     var startPercentage = calculatePosition(scope.interval.from);
                     element[0].style.top = startPercentage + '%';
                     
                     var endPercentage = calculatePosition(scope.interval.to) - startPercentage;
                     element[0].style.height = endPercentage + '%';
-
                 }
             }
         }
