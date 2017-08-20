@@ -7,35 +7,40 @@
 
         function() {
             function detect(intervals) {
-                var result = [];
+                if (!intervals || !intervals.length) {
+                    return null;
+                }
 
+                function newGroup(interval) {
+                    var group = {
+                        from: interval.from,
+                        to: interval.to,
+                        intervals: []
+                    };
+                    result.push(group);
+                    return group;
+                }
+
+                var result = [];
+                
                 // todo replace with _
                 intervals = intervals.splice(0).sort(function(a,b) {
                     return a.from > b.from;
                 });
-
-                while(intervals.length) {
-
-                    var group = {
-                        from: intervals[0].from,
-                        intervals: []
-                    };
-                    result.push(group);
-                    
-                    for(var i = 0; i < intervals.length; i++) {
-                        group.to = intervals[i].to;
-                        if (intervals[i].from < intervals[0].to)  {
-                            group.intervals.push(intervals[i]);
-                            if (intervals.length === 1) {
-                                intervals.splice(0, 1);
-                                break;
-                            }
-                        }
-                        else {
-                            intervals.splice(0, i);
-                            break;
-                        }
+            
+                var group;
+                for(var i = 0; i < intervals.length; i++) {
+                    if (i === 0) {
+                        group = newGroup(intervals[i]);
                     }
+
+                    if (intervals[i].from < group.to)  {
+                        group.to = group.to > intervals[i].to ? group.to : intervals[i].to;
+                    }
+                    else {
+                        group = newGroup(intervals[i]);
+                    }
+                    group.intervals.push(intervals[i]);
                 }
                 return result;
 
