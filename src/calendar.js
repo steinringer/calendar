@@ -69,8 +69,8 @@
             }
 
             return {
-                templateUrl: '/src/templates/interval.html',
                 scope: true,
+                templateUrl: '/src/templates/interval.html',
                 link: function(scope, element, attrs) {
                     element[0].classList.add('interval');
 
@@ -101,7 +101,9 @@
 
             return {
                 templateUrl: '/src/templates/dayView.html',
+                scope: false,
                 link: function(scope, element, attrs) {
+                    
                     element[0].classList.add('day-view');
                     populateHourSections(element, scope);
                 }
@@ -128,8 +130,8 @@
         }
     ]);
     angular.module('calendar').directive('calendar', [
-        'calendarConstants','$compile',
-        function(calendarConstants, $compile) {
+        'calendarConstants','$compile', 'weekOperations',
+        function(calendarConstants, $compile, weekOperations) {
 
             return {
                 scope: {
@@ -137,7 +139,7 @@
                 },
                 link: function(scope, element, attrs) {
                     element[0].classList.add('day-view');
-
+                    
                     scope.$watch('options.mode',
                     function(newVal) {
                         var template;
@@ -146,9 +148,25 @@
                                 template = '<day-view />';
                                 break;
                         }
-                        var dayScope = scope.$new();
-                        dayScope.intervals = scope.options.data;
-                        var view = $compile(template)(dayScope);
+                        var dayViewScope = scope.$new();
+                        dayViewScope.intervals = scope.options.data.filter(function(i) {
+                            var sd = new Date(
+                                scope.options.selectedDate.getFullYear(),
+                                scope.options.selectedDate.getMonth(),
+                                scope.options.selectedDate.getDate()
+                            );
+
+                            var sdTommorow = new Date(
+                                sd.getFullYear(),
+                                sd.getMonth(),
+                                sd.getDate() + 1
+                            )
+
+                            return i.to > sd && i.from < sdTommorow;
+                            
+                        });
+
+                        var view = $compile(template)(dayViewScope);
                         element.append(view);
                     })
                 }
