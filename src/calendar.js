@@ -11,10 +11,11 @@
 
                 // todo replace with _
                 intervals = intervals.splice(0).sort(function(a,b) {
-                    return a.from < b.from;
+                    return a.from > b.from;
                 });
 
                 while(intervals.length) {
+
                     var group = {
                         from: intervals[0].from,
                         intervals: []
@@ -23,10 +24,15 @@
                     
                     for(var i = 0; i < intervals.length; i++) {
                         group.to = intervals[i].to;
-                        if (i === 0 || intervals[i].from < intervals[0].to)  {
+                        if (intervals[i].from < intervals[0].to)  {
                             group.intervals.push(intervals[i]);
+                            if (intervals.length === 1) {
+                                intervals.splice(0, 1);
+                                break;
+                            }
                         }
                         else {
+                            intervals.splice(0, i);
                             break;
                         }
                     }
@@ -94,29 +100,11 @@
 
     angular.module('calendar').directive('interval', [
         function() {
-            var totalMillis = 86400000;
-
-            function calculatePosition(date) {
-                var start = date;
-                var startDay = new Date(
-                    date.getFullYear(),
-                    date.getMonth(),
-                    date.getDate());
-                
-                return ((start.getTime() - startDay.getTime()) / totalMillis) * 100.0;
-            }
-
             return {
                 scope: true,
                 templateUrl: '/src/templates/interval.html',
                 link: function(scope, element, attrs) {
                     element[0].classList.add('interval');
-
-                    var startPercentage = calculatePosition(scope.interval.from);
-                    element[0].style.top = startPercentage + '%';
-                    
-                    var endPercentage = calculatePosition(scope.interval.to) - startPercentage;
-                    element[0].style.height = endPercentage + '%';
                 }
             }
         }
@@ -126,6 +114,17 @@
         '$compile', 'collisionDetection',
         function($compile, collisionDetection) {
 
+            function calculatePosition(date) {
+                var totalMillis = 86400000;
+
+                var start = date;
+                var startDay = new Date(
+                    date.getFullYear(),
+                    date.getMonth(),
+                    date.getDate());
+                
+                return ((start.getTime() - startDay.getTime()) / totalMillis) * 100.0;
+            }
             function populateHourSections(element, scope) {
 
                 for(var i = 0; i < 24; i++) {
@@ -141,9 +140,35 @@
                 templateUrl: '/src/templates/dayView.html',
                 scope: false,
                 link: function(scope, element, attrs) {
-                    
                     element[0].classList.add('day-view');
                     populateHourSections(element, scope);
+
+                    var intervalGroups = collisionDetection.detect(scope.intervals);
+
+                    scope.positionedIntervals = [];
+
+                    angular.forEach(intervalGroups, function(group) {
+                        var width = 100.0 / group.intervals.length;
+
+                        angular.forEach(group.intervals, function(interval, idx) {
+                            var startPercentage = calculatePosition(interval.from);                            
+                            var endPercentage = calculatePosition(interval.to) - startPercentage;
+                            var widthPercantage = width;
+                            var left = (width * idx);
+
+                            scope.positionedIntervals.push({
+                                interval: interval,
+                                style: {
+                                    top: startPercentage + '%',
+                                    height: endPercentage + '%',
+                                    width: idx === 0 ? 'calc(' + width + '% - 60px)' : width + '%',
+                                    left: idx === 0 ? 'calc(60px + ' + left + '%)' : left + '%'
+                                }
+                            });
+                        });
+                    });
+
+                    console.log(scope.positionedIntervals);
                 }
             }
         }
