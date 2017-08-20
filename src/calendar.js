@@ -109,6 +109,24 @@
         }
     ]);
 
+    angular.module('calendar').factory('weekOperations', [
+
+        function() {
+            function getPreviousStartOfWeek(date) {
+                while (date.getDay() != 1) {
+                    var millisYesterday = date.getTime() - 3600000;
+                    date = new Date(millisYesterday);
+                }
+
+                date = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+                return date;
+            }
+
+            return {
+                getPreviousStartOfWeek: getPreviousStartOfWeek
+            };
+        }
+    ]);
     angular.module('calendar').directive('calendar', [
         'calendarConstants','$compile',
         function(calendarConstants, $compile) {
