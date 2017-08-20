@@ -119,16 +119,30 @@
         '$compile', 'collisionDetection',
         function($compile, collisionDetection) {
 
-            function calculatePosition(date) {
-                var totalMillis = 86400000;
+            function calculatePosition(date, selectedDate) {
+                var totalDayMillis = 86400000;
 
-                var start = date;
-                var startDay = new Date(
-                    date.getFullYear(),
-                    date.getMonth(),
-                    date.getDate());
+                if (date.getHours() === 0 && date.getMinutes() === 0 && date.getSeconds() === 0) {
+                    // till midnight
+                    if (date.getDate() === selectedDate.getDate() + 1) {
+                        return 100.0;
+                    }
+                    else {
+                        return 0.0;
+                    }
+                }
+                else {
+
+                    var start = date;
+                    var startDay = new Date(
+                        date.getFullYear(),
+                        date.getMonth(),
+                        date.getDate());
+                    
+                    return ((start.getTime() - startDay.getTime()) / totalDayMillis) * 100.0;
+                }
+
                 
-                return ((start.getTime() - startDay.getTime()) / totalMillis) * 100.0;
             }
             function populateHourSections(element, scope) {
 
@@ -156,8 +170,8 @@
                         var width = 100.0 / group.intervals.length;
 
                         angular.forEach(group.intervals, function(interval, idx) {
-                            var startPercentage = calculatePosition(interval.from);                            
-                            var endPercentage = calculatePosition(interval.to) - startPercentage;
+                            var startPercentage = calculatePosition(interval.from, scope.options.selectedDate);                            
+                            var endPercentage = calculatePosition(interval.to, scope.options.selectedDate) - startPercentage;
                             var widthPercantage = width;
                             var left = (width * idx);
 
@@ -216,22 +230,31 @@
                                 template = '<day-view />';
                                 break;
                         }
+
+                        var sd = new Date(
+                            scope.options.selectedDate.getFullYear(),
+                            scope.options.selectedDate.getMonth(),
+                            scope.options.selectedDate.getDate()
+                        );
+
+                        var sdTommorow = new Date(
+                            sd.getFullYear(),
+                            sd.getMonth(),
+                            sd.getDate() + 1
+                        );
+
                         var dayViewScope = scope.$new();
                         dayViewScope.intervals = scope.options.data.filter(function(i) {
-                            var sd = new Date(
-                                scope.options.selectedDate.getFullYear(),
-                                scope.options.selectedDate.getMonth(),
-                                scope.options.selectedDate.getDate()
-                            );
-
-                            var sdTommorow = new Date(
-                                sd.getFullYear(),
-                                sd.getMonth(),
-                                sd.getDate() + 1
-                            )
-
                             return i.to > sd && i.from < sdTommorow;
                             
+                        }).map(function(i) {
+                            if (i.from < sd) {
+                                i.from = sd;
+                            }
+                            if (i.to > sdTommorow) {
+                                i.to = sdTommorow;
+                            }
+                            return i;
                         });
 
                         var view = $compile(template)(dayViewScope);

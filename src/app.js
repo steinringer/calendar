@@ -15,7 +15,9 @@
                     {from: new Date(2017, 7, 18, 11, 0, 0), to:new Date(2017, 7, 18, 12, 30, 0), title: "collision 2" },
                     {from: new Date(2017, 7, 18, 11, 0, 0), to:new Date(2017, 7, 18, 16, 30, 0), title: "huge" },
                     {from: new Date(2017, 7, 18, 15, 0, 0), to:new Date(2017, 7, 18, 18, 0, 0), title: "bar" },
-                    {from: new Date(2017, 7, 19, 15, 0, 0), to:new Date(2017, 7, 18, 18, 0, 0), title: "xyz" },
+                    {from: new Date(2017, 7, 18, 20, 0, 0), to:new Date(2017, 7, 19, 4, 0, 0), title: "long shift" },
+                    {from: new Date(2017, 7, 19, 15, 0, 0), to:new Date(2017, 7, 18, 18, 0, 0), title: "tommorow" },
+
                 ]
             };
         }
