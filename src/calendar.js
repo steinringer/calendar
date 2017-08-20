@@ -1,4 +1,4 @@
-(function() {
+;(function() {
     'use strict';
 
     angular.module('calendar', []);
@@ -8,7 +8,7 @@
         function() {
             function getPreviousStartOfWeek(date) {
                 while (date.getDay() != 1) {
-                    var millisYesterday = date.getTime() - 3600000;
+                    var millisYesterday = date.getTime() - 86400000;
                     date = new Date(millisYesterday);
                 }
 
@@ -16,8 +16,21 @@
                 return date;
             }
 
+            function getWeekSpan(date) {
+                var span = [];
+                var dayInMillis = 86400000;
+                var start = getPreviousStartOfWeek(date);
+                var startMillis = start.getTime();
+
+                for(var i = 0; i < 7; i++) {
+                    span.push(new Date(startMillis + (dayInMillis * i)));
+                }
+                return span;
+            }
+
             return {
-                getPreviousStartOfWeek: getPreviousStartOfWeek
+                getPreviousStartOfWeek: getPreviousStartOfWeek,
+                getWeekSpan: getWeekSpan
             };
         }
     ]);
@@ -176,12 +189,12 @@
 
             return {
                 templateUrl: '/src/templates/dayView.html',
-                scope: false,
+                scope: true,
                 link: function(scope, element, attrs) {
                     element[0].classList.add('day-view');
                     populateHourSections(element, scope);
-
-                    var intervalGroups = collisionDetection.detect(scope.intervals);
+                    
+                    var intervalGroups = collisionDetection.detect(scope.dayInterval.intervals);
 
                     scope.positionedIntervals = [];
 
@@ -205,8 +218,6 @@
                             });
                         });
                     });
-
-                    console.log(scope.positionedIntervals);
                 }
             }
         }
@@ -216,51 +227,57 @@
         'calendarConstants','$compile', 'weekOperations',
         function(calendarConstants, $compile, weekOperations) {
 
+            function initializeIntervals(date, intervals) {
+                
+                var sd = new Date(
+                    date.getFullYear(),
+                    date.getMonth(),
+                    date.getDate()
+                );
+
+                var sdTommorow = new Date(
+                    sd.getFullYear(),
+                    sd.getMonth(),
+                    sd.getDate() + 1
+                );
+                
+                var filteredIntervals = intervals.filter(function(i) {
+                    return i.to > sd && i.from < sdTommorow;
+                    
+                }).map(function(i) {
+                    if (i.from < sd) {
+                        i.from = sd;
+                    }
+                    if (i.to > sdTommorow) {
+                        i.to = sdTommorow;
+                    }
+                    return i;
+                });
+
+                return {
+                    date: sd,
+                    intervals: filteredIntervals
+                };
+            }
+
             return {
+                templateUrl: '/src/templates/calendar.html',
                 scope: {
                     options: '='
                 },
                 link: function(scope, element, attrs) {
                     element[0].classList.add('day-view');
                     
-                    scope.$watch('options.mode',
-                    function(newVal) {
-                        var template;
-                        switch(newVal) {
-                            case calendarConstants.DAY:
-                                template = '<day-view />';
-                                break;
-                        }
-
-                        var sd = new Date(
-                            scope.options.selectedDate.getFullYear(),
-                            scope.options.selectedDate.getMonth(),
-                            scope.options.selectedDate.getDate()
-                        );
-
-                        var sdTommorow = new Date(
-                            sd.getFullYear(),
-                            sd.getMonth(),
-                            sd.getDate() + 1
-                        );
-
-                        var dayViewScope = scope.$new();
-                        dayViewScope.intervals = scope.options.data.filter(function(i) {
-                            return i.to > sd && i.from < sdTommorow;
-                            
-                        }).map(function(i) {
-                            if (i.from < sd) {
-                                i.from = sd;
-                            }
-                            if (i.to > sdTommorow) {
-                                i.to = sdTommorow;
-                            }
-                            return i;
+                    scope.dayIntervals = [];
+                    if (scope.options.mode === calendarConstants.DAY) {
+                        scope.dayIntervals.push(initializeIntervals(scope.options.selectedDate, scope.options.data));
+                    }
+                    else {
+                        var weekSpan = weekOperations.getWeekSpan(scope.options.selectedDate);
+                        angular.forEach(weekSpan, function(day) {
+                            scope.dayIntervals.push(initializeIntervals(day, scope.options.data));
                         });
-
-                        var view = $compile(template)(dayViewScope);
-                        element.append(view);
-                    })
+                    }
                 }
             }
         }
