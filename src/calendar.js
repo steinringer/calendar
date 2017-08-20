@@ -2,6 +2,44 @@
     'use strict';
 
     angular.module('calendar', []);
+
+    angular.module('calendar').factory('collisionDetection', [
+
+        function() {
+            function detect(intervals) {
+                var result = [];
+
+                // todo replace with _
+                intervals = intervals.splice(0).sort(function(a,b) {
+                    return a.from < b.from;
+                });
+
+                while(intervals.length) {
+                    var group = {
+                        from: intervals[0].from,
+                        intervals: []
+                    };
+                    result.push(group);
+                    
+                    for(var i = 0; i < intervals.length; i++) {
+                        group.to = intervals[i].to;
+                        if (i === 0 || intervals[i].from < intervals[0].to)  {
+                            group.intervals.push(intervals[i]);
+                        }
+                        else {
+                            break;
+                        }
+                    }
+                }
+                return result;
+
+            }
+
+            return {
+                detect: detect
+            };
+        }
+    ])
         
     angular.module('calendar').filter('duration', [
         '$filter',
@@ -85,8 +123,8 @@
     ]);
 
     angular.module('calendar').directive('dayView', [
-        '$compile',
-        function($compile) {
+        '$compile', 'collisionDetection',
+        function($compile, collisionDetection) {
 
             function populateHourSections(element, scope) {
 
