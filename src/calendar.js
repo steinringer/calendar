@@ -1,4 +1,4 @@
-;(function() {
+(function() {
     'use strict';
 
     angular.module('calendar', []);
@@ -196,6 +196,8 @@
                     
                     var intervalGroups = collisionDetection.detect(scope.dayInterval.intervals);
 
+                    element[0].style.width = (100.0 / scope.dayIntervals.length ) + '%';
+                    
                     scope.positionedIntervals = [];
 
                     angular.forEach(intervalGroups, function(group) {
@@ -229,33 +231,33 @@
 
             function initializeIntervals(date, intervals) {
                 
-                var sd = new Date(
+                var selectedDate = new Date(
                     date.getFullYear(),
                     date.getMonth(),
                     date.getDate()
                 );
 
-                var sdTommorow = new Date(
-                    sd.getFullYear(),
-                    sd.getMonth(),
-                    sd.getDate() + 1
+                var selectedDateTommorow = new Date(
+                    selectedDate.getFullYear(),
+                    selectedDate.getMonth(),
+                    selectedDate.getDate() + 1
                 );
                 
                 var filteredIntervals = intervals.filter(function(i) {
-                    return i.to > sd && i.from < sdTommorow;
+                    return i.to > selectedDate && i.from < selectedDateTommorow;
                     
                 }).map(function(i) {
-                    if (i.from < sd) {
-                        i.from = sd;
+                    if (i.from < selectedDate) {
+                        i.from = selectedDate;
                     }
-                    if (i.to > sdTommorow) {
-                        i.to = sdTommorow;
+                    if (i.to > selectedDateTommorow) {
+                        i.to = selectedDateTommorow;
                     }
                     return i;
                 });
 
                 return {
-                    date: sd,
+                    date: selectedDate,
                     intervals: filteredIntervals
                 };
             }
@@ -266,8 +268,6 @@
                     options: '='
                 },
                 link: function(scope, element, attrs) {
-                    element[0].classList.add('day-view');
-                    
                     scope.dayIntervals = [];
                     if (scope.options.mode === calendarConstants.DAY) {
                         scope.dayIntervals.push(initializeIntervals(scope.options.selectedDate, scope.options.data));
